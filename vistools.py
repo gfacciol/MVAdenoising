@@ -244,7 +244,7 @@ def display_patches_vrange(mb, vrange=None):
         vmin = vrange[0]
         vmax = vrange[1]
     
-    plt.figure(figsize=(12, 12))
+    plt.figure(figsize=(9.5, 12))
     i=0
 
     L = len(mb)
