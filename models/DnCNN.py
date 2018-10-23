@@ -33,7 +33,7 @@ class CONV_BN_RELU(nn.Module):
 
         Return: initialized module
         '''
-        super(CONV_BN_RELU, self).__init__()
+        super(__class__, self).__init__()
 
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, 
                               stride=stride, padding=padding)
@@ -72,7 +72,7 @@ class DnCNN(nn.Module):
 
         Return: initialized network
         '''
-        super(DnCNN, self).__init__()
+        super(__class__, self).__init__()
         
         self.residual = residual
         

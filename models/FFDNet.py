@@ -25,7 +25,7 @@ class FFDNet(nn.Module):
     '''
     def __init__(self, sigma=30/255, inchannels=1, outchannels=1, num_of_layers=15, 
                  features=64, kernel_size=3):
-        super(FFDNet, self).__init__()
+        super(__class__, self).__init__()
         
         self.sigma=sigma
         
