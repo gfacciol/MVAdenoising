@@ -60,7 +60,7 @@ class DnCNN(nn.Module):
     def __init__(self, in_channels=1, out_channels=1, num_layers=17, 
                  features=64, kernel_size=3, residual=True):
         '''
-        Constructor
+        Constructor for a DnCNN network.
 
         Args:
             - in_channels: input image channels (default 1)
@@ -70,7 +70,7 @@ class DnCNN(nn.Module):
             - kernel_size: size of conv. kernel (default 3)
             - residual: use residual learning (default True)
 
-        Return: initialized network
+        Return: network with randomly initialized weights
         '''
         super(__class__, self).__init__()
         
@@ -115,16 +115,18 @@ def DnCNN_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
     '''
     Loads the pretrained weights of DnCNN for grayscale images from 
     https://github.com/cszn/DnCNN.git
-    
-    sigma: is the level of noise in range(10,70,5)
-    savefile: is the .pt file to save the model weights 
-    returns the DnCNN(1,1) model with 17 layers with the pretrained weights
+
+    Args:
+        - sigma   : is the level of noise in range(10,76,5)
+        - savefile: is the .pt file to save the model weights 
+        - verbose : verbose output
+
+    Returns:
+        - DnCNN(1,1) model with 17 layers with the pretrained weights     
     '''
     
-    if sigma  not in list(range(10,70,5)):
-        print ('pretained sigma %d is not available'%sigma)
-        return
-   
+    # sigmas for which there is a pre-trained model
+    pretrained_sigmas = list(range(10, 76, 5))
  
     # download the pretained weights
     import os
@@ -136,7 +138,8 @@ def DnCNN_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
     except OSError:
         print('downloading pretrained models')
         subprocess.run(['git', 'clone',  'https://github.com/cszn/DnCNN.git'],cwd=here)
-        
+
+
         
     # read the weights
     import numpy as np
@@ -144,8 +147,31 @@ def DnCNN_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
     import torch
 
     dtype = torch.FloatTensor
-   
+
+    # find closest pre-trained sigma
+    pretrained_sigmas = np.array(pretrained_sigmas)
+    closest_pt_sigma = pretrained_sigmas[np.argmin(np.abs(pretrained_sigmas - sigma))]
+    if closest_pt_sigma != sigma:
+        print("Warning: no pretrained DnCNN for sigma = %d. Using instead sigma = %d" 
+              % (sigma, closest_pt_sigma))
+        sigma = closest_pt_sigma
+
     m = DnCNN(1,1)
+   
+
+    ### CACHING SYSTEM
+    cached_model_fname = here+'/DnCNN/cached_model_gray_sigma%02d.mat'%sigma
+    try: 
+        os.stat(cached_model_fname)
+        if torch.cuda.is_available():
+            loadmap = {'cuda:0': 'gpu'}
+        else:
+            loadmap = {'cuda:0': 'cpu'}
+        m = torch.load(cached_model_fname, map_location=loadmap)
+        return m
+    except OSError:
+        pass
+
         
     mat = hdf5storage.loadmat(here+'/DnCNN/model/specifics/sigma=%d.mat'%sigma)
 
@@ -180,6 +206,13 @@ def DnCNN_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
     
     m.layers[r].weight = torch.nn.Parameter( dtype( w.transpose(TRANSPOSE_PATTERN)  )  )  
     m.layers[r].bias   = torch.nn.Parameter( dtype( b ) )
+
+    
+    ### FILL CACHE 
+    try: 
+        os.stat(cached_model_fname)
+    except OSError:
+        torch.save(m, cached_model_fname)
 
     
     if savefile:

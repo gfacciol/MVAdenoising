@@ -9,6 +9,12 @@ from __future__ import print_function
 
 ### DISPLAY IMAGES AND TABLES IN THE NOTEBOOK
 
+def unzip(list_of_tuples, pos=0):
+    '''
+    Unzip a list of tuples. Returns a list of all elements of position pos of the tuples.
+    '''
+    return list(zip(*list_of_tuples))[pos]
+
 
 # utility function for printing with Markdown format
 def printmd(string):

@@ -4,7 +4,6 @@ testing helpers for CNN denoising
 Copyright (C) 2018-2019, Gabriele Facciolo <facciolo@cmla.ens-cachan.fr>
 """
 
-
 def PSNR(img1, img2, peak=255):
     '''
     Computes the PSNR 'metric' between two images assumed to be in the range [0,1]
@@ -15,7 +14,7 @@ def PSNR(img1, img2, peak=255):
     return (10*np.log10(peak**2 / np.mean(x**2)))
 
 
-def test_denoiser(denoiser, img_in, sigma=30, show=False, has_noise=False):
+def test_denoiser(denoiser, img_in, sigma=30, show=False, has_noise=False, sigma_param=False, img_clean=None):
     '''
     Helper function to test a denoising network.
 
@@ -27,6 +26,8 @@ def test_denoiser(denoiser, img_in, sigma=30, show=False, has_noise=False):
                    set it to False if img_in is the clean image. In this
                    case noise will be added to test the denoising.
         show: if True shows a gallery with the denoising result
+        sigma_param: True if the denoiser requires sigma as input
+        img_clean: if set then has_noise<-False and PSNR is computed
 
     Returns:
         img_denoised: denoised image
@@ -43,6 +44,9 @@ def test_denoiser(denoiser, img_in, sigma=30, show=False, has_noise=False):
         img_clean = img_in.astype('float32') / 255.
         img_test = img_clean + np.random.normal(0, sigma/255.0, img_clean.shape)
     else:
+        if img_clean is not None:
+            has_noise = False
+            img_clean = img_clean.astype('float32') / 255.
         img_test = img_in.astype('float32') / 255.
 
     # call the denoiser
@@ -60,7 +64,12 @@ def test_denoiser(denoiser, img_in, sigma=30, show=False, has_noise=False):
     # apply denoising network
     with torch.no_grad(): # tell pytorch that we don't need gradients
         img = dtype(img_test[np.newaxis,np.newaxis,:,:]) # convert to tensor
-        out = denoiser.forward(img) # apply network; equivalent to out = denoiser(img)
+        if sigma_param == True:
+            # apply network; equivalent to out = denoiser(img, sigma)
+            out = denoiser.forward(img, sigma/255.)
+        else:
+            # apply network; equivalent to out = denoiser(img)
+            out = denoiser.forward(img)
         out = out.cpu() # move to CPU memory
 
     # compute psnr

@@ -38,15 +38,14 @@ def make_dataset(dir):
 
 class ImageDenoisingDataset(Dataset):
 
-    def __init__(self, root, sigma=0, Data_preprocessing=None, Randomnoiselevel=False):
+    def __init__(self, root, sigma=0, Data_preprocessing=None, Randomnoiselevel=False, noise2noise=True):
         """
         Args:
             root (string): Root directory path.
             Data_preprocessing (callable, optional): A function/transform that  takes in an PIL image and returns a transformed version. E.g, ``transforms.RandomCrop``
             sigma: the level of noise we are going to add
             Randomnoiselevel: if True a random noise in [0,sigma]
-         Attributes:
-            imgs (list):(image path) 
+            noise2noise: if True, the returned gt is also a noisy image 
         """
         imgs = make_dataset(root)
         
@@ -59,7 +58,11 @@ class ImageDenoisingDataset(Dataset):
         self.root = root
         self.imgs = imgs
         self.Data_preprocessing = Data_preprocessing
-
+        self.noise2noise = noise2noise
+        
+    def add_noise(self, img, p):
+        return img + torch.randn(img.size())*p
+    
         
     def __getitem__(self, index):
         """
@@ -77,25 +80,105 @@ class ImageDenoisingDataset(Dataset):
             img = self.Data_preprocessing(img)
         else:
             img = T.ToTensor()(img)
-                
-        gt  = img.clone()    
-        
+
         if self.Randomnoiselevel is True :
-            img += torch.randn(img.size())*self.sigma/255*torch.rand(1)              
+            p = self.sigma/255*torch.rand(1)              
         else:
-            img += torch.randn(img.size())*self.sigma/255
+            p = self.sigma/255
+        
+        # add noise to groud truth if noise2noise
+        gt = img.clone()
+        if self.noise2noise:
+            gt = self.add_noise(gt, p)
+
+        # add noise to image
+        img = self.add_noise(img, p)
+                
+        return img, gt
+
+
+    def __len__(self):
+        return len(self.imgs)
+
+
+class ImageUniformNoiseDataset(Dataset):
+
+    def __init__(self, root, sigma=0, Data_preprocessing=None, Randomnoiselevel=False, noise2noise=False):
+        """
+        Args:
+            root (string): Root directory path.
+            Data_preprocessing (callable, optional): A function/transform that  takes in an PIL image and returns a transformed version. E.g, ``transforms.RandomCrop``
+            sigma: the level of noise we are going to add
+            Randomnoiselevel: if True a random noise in [0,sigma]
+        """
+        imgs = make_dataset(root)
+        
+        if len(imgs) == 0:
+            raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
+                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+
+        if sigma > 1 or sigma < 0:
+            raise(RuntimeError("Noise level %f ouside valid range [0,1]. " % (sigma)))
+        
+        self.Randomnoiselevel=Randomnoiselevel
+        self.sigma = sigma
+        self.root = root
+        self.imgs = imgs
+        self.Data_preprocessing = Data_preprocessing
+        self.noise2noise = noise2noise
+
+    def add_noise(self, img, p):
+        mask = torch.bernoulli( 1 - p * torch.ones(img.size()))
+        noise = torch.Tensor(img.size()).uniform_(0,1)
+        return img * mask + noise * (1 - mask)
+
+        
+    def __getitem__(self, index):
+        """
+        Args:
+            index (int): Index
+        Returns:
+            tuple: (image, groundtruth) 
+        """
+
+        img_name = self.imgs[index]
+        img = Image.open( open(img_name, 'rb') ).convert('L')
+        #image = io.imread(img_name)
+         
+        if self.Data_preprocessing is not None:
+            img = self.Data_preprocessing(img)
+        else:
+            img = T.ToTensor()(img)
+
+        if self.Randomnoiselevel is True:
+            p = torch.rand(1)
+        else:
+            p = self.sigma
+
+        # add noise to groud truth
+        gt = img.clone()
+        if self.noise2noise:
+            gt = self.add_noise(gt, p)
+
+        # add noise to image
+        img = self.add_noise(img, p)
 
         return img, gt
 
 
     def __len__(self):
         return len(self.imgs)
-        
-        
+
+
+
+
+
         
 def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
                                     train_batch_size=128, val_batch_size=32,
-                                    validation_split_fraction=0.1 ):
+                                    validation_split_fraction=0.1,
+                                    noise_type = 'gaussian',
+                                    noise2noise = False):
     '''creates dataloaders '''
     # The torchvision.transforms package provides tools for preprocessing data
     # and for performing data augmentation; here we set up a transform to
@@ -106,8 +189,16 @@ def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
     # We set up a Dataset object; 
     # Datasets load training examples one at a time, so we wrap it in a DataLoader
     # which iterates through the Dataset and forms minibatches.
-    mydataset = ImageDenoisingDataset(imagepath, noise_sigma, Data_preprocessing, 
-                                      Randomnoiselevel=False)
+    if noise_type == 'gaussian':
+        mydataset = ImageDenoisingDataset(imagepath, noise_sigma, Data_preprocessing, 
+                                          Randomnoiselevel=False,
+                                          noise2noise = noise2noise)
+    elif noise_type == 'uniform-sp':
+        mydataset = ImageUniformNoiseDataset(imagepath, noise_sigma, Data_preprocessing,
+                                             Randomnoiselevel=False,
+                                             noise2noise = noise2noise)
+    else:
+        raise(RuntimeError("Noise type %s unknown. " % (noise_type)))
 
     #trainloader = torch.utils.data.DataLoader(mydataset, shuffle=True, batch_size=128, num_workers=0)
 
@@ -132,4 +223,3 @@ def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
     val_loader   = DataLoader(mydataset, batch_size=val_batch_size,   sampler=validation_sampler)
     return train_loader, val_loader
     
-

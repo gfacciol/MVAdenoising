@@ -47,12 +47,19 @@ class FFDNet(nn.Module):
         
     def forward(self, x, sigma_map=None):
         ''' forward declaration '''
+
+        import numpy as np
         
         sh = x.shape
 
         # sigma may be missing
         if sigma_map==None:
             sigma_map = torch.ones(1,1,sh[2],sh[3], device=x.device)*self.sigma
+
+        # sigma may be a number
+        if np.array(sigma_map).size == 1:
+            #print('scalar sigma map %f' % (np.array(sigma_map)*255))
+            sigma_map = torch.ones(1,1,sh[2],sh[3], device=x.device)*sigma_map
 
         # subsample sigma_map
         sig = sigma_map[:,:,::2,::2]
@@ -127,6 +134,22 @@ def FFDNet_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
    
     m = FFDNet(sigma/255)
         
+        
+    ### CACHING SYSTEM
+    cached_model_fname = here+'/FFDNet/cached_model_gray.mat'
+    try: 
+        os.stat(cached_model_fname)
+        if torch.cuda.is_available():
+            loadmap = {'cuda:0': 'gpu'}
+        else:
+            loadmap = {'cuda:0': 'cpu'}
+        m = torch.load(cached_model_fname, map_location=loadmap)
+        return m
+    except OSError:
+        pass 
+    
+    
+    
     mat = hdf5storage.loadmat(here+'/FFDNet/models/FFDNet_gray.mat')
 
     TRANSPOSE_PATTERN = [3, 2, 0, 1]
@@ -161,6 +184,13 @@ def FFDNet_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
     m.dncnn.layers[r].weight = torch.nn.Parameter( dtype( w.transpose(TRANSPOSE_PATTERN)  )  )  
     m.dncnn.layers[r].bias   = torch.nn.Parameter( dtype( b ) )
 
+    ### FILL CACHE 
+    try: 
+        os.stat(cached_model_fname)
+    except OSError:
+        pass
+        torch.save(m, cached_model_fname)
+    
     
     if savefile:
         torch.save(m, savefile)

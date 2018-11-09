@@ -22,7 +22,10 @@ def check_accuracy(model, loss_fn, dataloader):
     dtype = torch.FloatTensor
     if torch.cuda.is_available():
         model = model.cuda()
-        loss_fn = loss_fn.cuda()
+        try:
+            loss_fn = loss_fn.cuda()
+        except:
+            pass
         dtype   = torch.cuda.FloatTensor
 
     loss = 0
@@ -47,7 +50,7 @@ def check_accuracy(model, loss_fn, dataloader):
 def trainmodel(model, loss_fn, loader_train, loader_val=None,
                optimizer=None, scheduler=None, num_epochs = 1,
                learning_rate=0.001, weight_decay=0.0, loss_every=10,
-               save_every=10, filename=None):
+               save_every=10, filename=None, val_loss_fn=None):
     """
     function that trains a network model
     Args:
@@ -63,6 +66,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
         - loss_every  : print the loss every n epochs
         - learning_rate: learning rate (default 0.001)
         - weight_decay: weight decay regularization (default 0.0)
+        - val_loss_fn : if set, indicates validation loss function, otherwise uses loss_fn 
     Returns:
         - model          : trained network
         - loss_history   : history of loss values on the training set
@@ -72,11 +76,19 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
     from time import time
     import numpy as np
 
+    # if not set validation loss is loss_fn
+    if val_loss_fn == None:
+        val_loss_fn = loss_fn
+        
     dtype = torch.FloatTensor
     # GPU
     if torch.cuda.is_available():
         model   = model.cuda()
-        loss_fn = loss_fn.cuda()
+        try:
+            loss_fn = loss_fn.cuda()
+            val_loss_fn = val_loss_fn.cuda()
+        except:
+            pass
         dtype   = torch.cuda.FloatTensor
 
     if optimizer == None or scheduler == None:
@@ -108,7 +120,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
     # Display initial training and validation loss
     message=''
     if loader_val is not None:
-        valloss = check_accuracy(model, loss_fn, loader_val)
+        valloss = check_accuracy(model, val_loss_fn, loader_val)
         message = ', val_loss = %.4f' % valloss.item()
 
     print('Epoch %5d/%5d, ' % (0, num_epochs) +
@@ -149,7 +161,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
         # Store loss history to plot it later
         loss_history.append(loss)
         if loader_val is not None:
-            valloss = check_accuracy(model, loss_fn, loader_val)
+            valloss = check_accuracy(model, val_loss_fn, loader_val)
             valloss_history.append(valloss)
 
         # Display current loss and compute validation loss
