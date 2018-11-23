@@ -89,9 +89,11 @@ class outconv(nn.Module):
 #from .unet_parts import *
 
 class UNet(nn.Module):
-    def __init__(self, n_channels, n_classes):
+    def __init__(self, n_channels, n_classes, skipc=True):
         super(__class__, self).__init__()
         
+        self.skipc = skipc
+
         self.inc = inconv(n_channels, 64)
         self.down1 = down(64, 128)
         self.down2 = down(128, 256)
@@ -102,6 +104,7 @@ class UNet(nn.Module):
         self.up3 = up(256, 64)
         self.up4 = up(128, 64)
         self.outc = outconv(64, n_classes)
+            
 
     def forward(self, x):
         x1 = self.inc(x)
@@ -109,10 +112,17 @@ class UNet(nn.Module):
         x3 = self.down2(x2)
         x4 = self.down3(x3)
         x5 = self.down4(x4)
-        x = self.up1(x5, x4)
-        x = self.up2(x, x3)
-        x = self.up3(x, x2)
-        x = self.up4(x, x1)
+        if self.skipc: # use the skipc connections
+            x = self.up1(x5, x4)
+            x = self.up2(x,  x3)
+            x = self.up3(x,  x2)
+            x = self.up4(x,  x1)
+        else:         # kill the skipc connections
+            x = self.up1(x5, 0*x4)
+            x = self.up2(x,  0*x3)
+            x = self.up3(x,  0*x2)
+            x = self.up4(x,  0*x1)
+            
         x = self.outc(x)
         return x
 
