@@ -36,6 +36,12 @@ def show_array(a, fmt='jpeg'):
     from io import BytesIO
     import IPython.display
     import numpy as np
+    
+    #handle color images (3,N,M) -> (N,M,3)
+    a = a.squeeze()
+    if len(a.shape) == 3 and a.shape[0] == 3:
+        a = a.transpose(1,2,0)
+        
     f = BytesIO()
     PIL.Image.fromarray(np.uint8(a).squeeze() ).save(f, fmt)
     IPython.display.display(IPython.display.Image(data=f.getvalue()))
@@ -84,6 +90,12 @@ def display_imshow(im, range=None, cmap='gray', axis='equal', invert=False):
     if range:
         vmin,vmax = range[0],range[1]
     plt.figure(figsize=(13, 10))
+    
+    #handle color images (3,N,M) -> (N,M,3)
+    im = im.squeeze()
+    if len(im.shape) == 3 and im.shape[0] == 3:
+        im = im.transpose(1,2,0)
+        
     plt.imshow(im.squeeze(), cmap=cmap, vmin=vmin, vmax=vmax)
     if invert:
         plt.gca().invert_yaxis()
@@ -105,8 +117,14 @@ def urlencoded_jpeg_img(a):
     from io import BytesIO
     import IPython.display
     import numpy as np
-    f = BytesIO()
     import base64
+    
+    #handle color images (3,N,M) -> (N,M,3)
+    a = a.squeeze()
+    if len(a.shape) == 3 and a.shape[0] == 3:
+        a = a.transpose(1,2,0)
+        
+    f = BytesIO()
     PIL.Image.fromarray(np.uint8(a).squeeze() ).save(f, fmt)
     x =  base64.b64encode(f.getvalue())
     return '''<img src="data:image/jpeg;base64,{}&#10;"/>'''.format(x.decode())

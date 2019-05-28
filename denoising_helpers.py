@@ -39,6 +39,10 @@ def test_denoiser(denoiser, img_in, sigma=30, show=False, has_noise=False, sigma
     import numpy as np
     import torch 
 
+    
+    iscolor = len(img_in.squeeze().shape) == 3 and img_in.squeeze().shape[0] == 3
+        
+    
     # put the image in the range [0,1] and add noise
     if has_noise == False:
         img_clean = img_in.astype('float32') / 255.
@@ -63,7 +67,10 @@ def test_denoiser(denoiser, img_in, sigma=30, show=False, has_noise=False, sigma
 
     # apply denoising network
     with torch.no_grad(): # tell pytorch that we don't need gradients
-        img = dtype(img_test[np.newaxis,np.newaxis,:,:]) # convert to tensor
+        if iscolor:
+            img = dtype(img_test[np.newaxis,:,:,:]) # convert to tensor
+        else:
+            img = dtype(img_test[np.newaxis,np.newaxis,:,:]) # convert to tensor
         if sigma_param == True:
             # apply network; equivalent to out = denoiser(img, sigma)
             out = denoiser.forward(img, sigma/255.)

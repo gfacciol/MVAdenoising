@@ -111,23 +111,28 @@ class DnCNN(nn.Module):
 
 
 
-def DnCNN_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
+def DnCNN_pretrained(sigma=30, savefile=None, verbose=False, color=False):
     '''
-    Loads the pretrained weights of DnCNN for grayscale images from 
-    https://github.com/cszn/DnCNN.git
+    Loads the pretrained weights of DnCNN for grayscale and color images  
+    from https://github.com/cszn/DnCNN.git
 
     Args:
         - sigma   : is the level of noise in range(10,76,5)
         - savefile: is the .pt file to save the model weights 
         - verbose : verbose output
+        - color   : load the weights for the color networks
 
     Returns:
-        - DnCNN(1,1) model with 17 layers with the pretrained weights     
+        - DnCNN(1,1) model with 17 layers with the pretrained weights    
+        or
+        - DnCNN(3,3) model with 20 layers with the pretrained weights     
     '''
     
     # sigmas for which there is a pre-trained model
-    pretrained_sigmas = list(range(10, 76, 5))
- 
+    pretrained_sigmas       = list(range(10, 76, 5))
+    pretrained_sigmas_color = [5,10,15,25,35,50]
+
+    
     # download the pretained weights
     import os
     import subprocess
@@ -149,18 +154,33 @@ def DnCNN_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
     dtype = torch.FloatTensor
 
     # find closest pre-trained sigma
-    pretrained_sigmas = np.array(pretrained_sigmas)
+    if not color:
+        pretrained_sigmas = np.array(pretrained_sigmas)
+    else:
+        pretrained_sigmas = np.array(pretrained_sigmas_color)
     closest_pt_sigma = pretrained_sigmas[np.argmin(np.abs(pretrained_sigmas - sigma))]
     if closest_pt_sigma != sigma:
         print("Warning: no pretrained DnCNN for sigma = %d. Using instead sigma = %d" 
               % (sigma, closest_pt_sigma))
         sigma = closest_pt_sigma
+    
+    
+    if not color:
+        num_layers=17
+        m = DnCNN(1,1, num_layers=num_layers)
+    else:
+        num_layers=20
+        m = DnCNN(3,3, num_layers=num_layers)
 
-    m = DnCNN(1,1)
-   
-
+        
+        
     ### CACHING SYSTEM
-    cached_model_fname = here+'/DnCNN/cached_model_gray_sigma%02d.mat'%sigma
+    if not color:
+        cached_model_fname = here+'/DnCNN/cached_model_gray_sigma%02d.mat'%sigma
+    else:
+        cached_model_fname = here+'/DnCNN/cached_model_color_sigma%02d.mat'%sigma
+
+        
     try: 
         os.stat(cached_model_fname)
         if torch.cuda.is_available():
@@ -172,14 +192,27 @@ def DnCNN_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
     except OSError:
         pass
 
+    
+    if not color:        
+        mat = hdf5storage.loadmat(here+'/DnCNN/model/specifics/sigma=%02d.mat'%sigma)
+    else:
+        mat = hdf5storage.loadmat(here+'/DnCNN/model/specifics_color/color_sigma=%02d.mat'%sigma)
         
-    mat = hdf5storage.loadmat(here+'/DnCNN/model/specifics/sigma=%d.mat'%sigma)
-
     TRANSPOSE_PATTERN = [3, 2, 0, 1]
 
+    
+    
+    # load all weights from the matlab file 
+    weigh={}
+    for l in mat['net']['params'][0][0][0]: 
+        #print(l[0])
+        weigh[l[0][0]] = l[1]
+
+    
+    
     # copy first 16 layers
     t=0
-    for r in range(16):
+    for r in range(num_layers-1):
         x = mat['net'][0][0][0][t]
         if verbose:
             print(t, x[0][7], x[0][1][0,0].shape, x[0][1][0,1].shape)
@@ -194,16 +227,21 @@ def DnCNN_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
         m.layers[r].bn.weight   = torch.nn.Parameter( m.layers[r].bn.weight  *0 +1)
         t+=2
 
+        
     # copy last layer 
-    r=16
+    r = num_layers-1
     x = mat['net'][0][0][0][t]
     if verbose:
         print(t, x[0][7], x[0][1][0,0].shape, x[0][1][0,1].shape)
         print(r, m.layers[r].weight.shape, m.layers[r].bias.shape)
 
-    w = np.array(x[0][1][0,0])[:,:,:,np.newaxis]
-    b = np.array(x[0][1][0,1])[:,0]
-    
+    if not color:
+        w = np.array(x[0][1][0,0])[:,:,:,np.newaxis]
+        b = np.array(x[0][1][0,1])[:,0]
+    else:
+        w = np.array(x[0][1][0,0])
+        b = np.array(x[0][1][0,1]).squeeze()
+        
     m.layers[r].weight = torch.nn.Parameter( dtype( w.transpose(TRANSPOSE_PATTERN)  )  )  
     m.layers[r].bias   = torch.nn.Parameter( dtype( b ) )
 
