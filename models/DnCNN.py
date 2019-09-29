@@ -202,13 +202,6 @@ def DnCNN_pretrained(sigma=30, savefile=None, verbose=False, color=False):
 
     
     
-    # load all weights from the matlab file 
-    weigh={}
-    for l in mat['net']['params'][0][0][0]: 
-        #print(l[0])
-        weigh[l[0][0]] = l[1]
-
-    
     
     # copy first 16 layers
     t=0
