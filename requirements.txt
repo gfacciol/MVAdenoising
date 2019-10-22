@@ -1,7 +1,7 @@
 torch==0.4.0
 torchvision 
 hdf5storage
-Pillow==4.0.0
+Pillow==6.2.0
 scikit-image
 image
 git+https://github.com/szagoruyko/pytorchviz
