@@ -211,6 +211,11 @@ def display_gallery(image_urls, image_labels=None):
             if type(u) == torch.Tensor:  u = np.array(u)
         except ImportError:
             pass
+        try:
+            import imageio
+            if type(u) == imageio.core.util.Array:  u = np.array(u)
+        except ImportError:
+            pass
         
         if type(u) == str:
             li = li + li_template.format( idx, u, label)
