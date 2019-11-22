@@ -57,7 +57,7 @@ class FFDNet(nn.Module):
             sigma_map = torch.ones(1,1,sh[2],sh[3], device=x.device)*self.sigma
 
         # sigma may be a number
-        if np.array(sigma_map).size == 1:
+        elif type(sigma_map) is not np.ndarray:
             #print('scalar sigma map %f' % (np.array(sigma_map)*255))
             sigma_map = torch.ones(1,1,sh[2],sh[3], device=x.device)*sigma_map
 
