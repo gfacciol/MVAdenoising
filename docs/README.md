@@ -4,7 +4,7 @@
 
 [TP1](https://colab.research.google.com/drive/1Sp4pETeaZU7dnnzheCxqw8LVGVn4g9TW)
 
-[TP2] 
+[TP2](https://colab.research.google.com/drive/1eFXceVAw-_2rHqOiTYgpgz1Q2NRRYSEG) 
 
 [TP3]
 
