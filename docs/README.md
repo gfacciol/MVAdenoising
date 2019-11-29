@@ -6,6 +6,8 @@
 
 [TP2](https://colab.research.google.com/drive/1eFXceVAw-_2rHqOiTYgpgz1Q2NRRYSEG) 
 
-[TP3]
+[TP3](https://colab.research.google.com/drive/1ZAHaZJ2nsFVEDZD8B65he3SMSD0dmMei)
+
+[TP4]()
 
 **[submit your solutions here](https://docs.google.com/forms/d/e/1FAIpQLScQZ6QQvsdihV5NqNBeVe35Cg1MnvjFFNum7o-v8Ody6dhpVA/viewform)**
