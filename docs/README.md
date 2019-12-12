@@ -10,6 +10,6 @@
 
 [TP4 - different denoising architectures](https://colab.research.google.com/drive/1ua-WDYpUsTdAyPOFlj7uFGh22ZKuLdDO)  <br>
 
-[TP4 - DIP](https://colab.research.google.com/drive/1jqacuFh4I34MEVFGcBjJaT7kyZGOO5VB)
+[TP4' - DIP: deep image prior](https://colab.research.google.com/drive/1jqacuFh4I34MEVFGcBjJaT7kyZGOO5VB)
 
 **[submit your solutions here](https://docs.google.com/forms/d/e/1FAIpQLScQZ6QQvsdihV5NqNBeVe35Cg1MnvjFFNum7o-v8Ody6dhpVA/viewform)**
