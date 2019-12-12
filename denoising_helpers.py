@@ -78,6 +78,7 @@ def test_denoiser(denoiser, img_in, sigma=30, show=False, has_noise=False, sigma
             # apply network; equivalent to out = denoiser(img)
             out = denoiser.forward(img)
         out = out.cpu() # move to CPU memory
+        img = img.cpu() 
 
     # compute psnr
     if has_noise == False:
