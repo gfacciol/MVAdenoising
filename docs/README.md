@@ -2,7 +2,7 @@
 
 **Jean-Michel Morel, Pablo Arias, Gabriele Facciolo**
 
-### Deep learning TPs
+## Deep learning TPs
 
 [TP0 - quick pytorch tutorial](https://colab.research.google.com/drive/1n4r0GFizHqJDHQ0W4WwZMCoP1LLgMaBa)
 
