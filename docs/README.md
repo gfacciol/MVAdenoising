@@ -1,4 +1,8 @@
-# MVA Course Image denoising the man-machine contest
+# MVA Course Image denoising the man-machine contest - 2019
+
+**Jean-Michel Morel, Pablo Arias, Gabriele Facciolo**
+
+### Deep learning TPs
 
 [TP0 - quick pytorch tutorial](https://colab.research.google.com/drive/1n4r0GFizHqJDHQ0W4WwZMCoP1LLgMaBa)
 
