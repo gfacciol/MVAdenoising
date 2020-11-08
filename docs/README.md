@@ -1,4 +1,4 @@
-# MVA Course Image denoising the man-machine contest - 2020-2021
+# MVA Course Image denoising the man-machine contest - 2020
 
 **Jean-Michel Morel, Pablo Arias, Gabriele Facciolo**
 
