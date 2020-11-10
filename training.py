@@ -98,7 +98,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
         # of the model. It has hyper-parameters for controlling
         # the gradient update, such as the learning rate (lr) and
         # the regularization such as the weight_decay
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate,
+        optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate,
                                      betas=(0.9, 0.999), eps=1e-08,
                                      weight_decay=weight_decay, amsgrad=False)
 
@@ -128,7 +128,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
 
     # Save initial results
     if filename:
-        torch.save([model, optimizer, loss_history, valloss_history],
+        torch.save([model, loss_history, valloss_history],
                    filename+'%04d.pt' % 0)
 
     # Main training loop
@@ -175,7 +175,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
 
         # Save partial results
         if filename and ((epoch + 1) % save_every == 0):
-            torch.save([model, optimizer, loss_history, valloss_history],
+            torch.save([model, loss_history, valloss_history],
                        filename+'%04d.pt' % (epoch + 1))
             print('Epoch %5d/%5d, checkpoint saved' % (epoch + 1, num_epochs))
 
@@ -184,7 +184,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
 
     # Save last result
     if filename:
-        torch.save([model, optimizer, loss_history, valloss_history],
+        torch.save([model, loss_history, valloss_history],
                     filename+'%04d.pt' % (epoch + 1))
 
     return model, loss_history, valloss_history
