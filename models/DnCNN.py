@@ -1,8 +1,8 @@
 """
 Parametrable DnCNN model (https://github.com/cszn/DnCNN.git)
 
-Copyright (C) 2018-2019, Gabriele Facciolo <facciolo@cmla.ens-cachan.fr>
-Copyright (C) 2018-2019, Pablo Arias <arias@cmla.ens-cachan.fr>
+Copyright (C) 2018-2020, Gabriele Facciolo <facciolo@cmla.ens-cachan.fr>
+Copyright (C) 2018-2020, Pablo Arias <arias@cmla.ens-cachan.fr>
 Inspired on:
     https://github.com/SaoYan/DnCNN-PyTorch/
     https://github.com/Ourshanabi/Burst-denoising
@@ -20,7 +20,7 @@ class CONV_BN_RELU(nn.Module):
     '''
 
     def __init__(self, in_channels=128, out_channels=128, kernel_size=7, 
-                 stride=1, padding=3):
+                 stride=1, padding=3, bias=True):
         '''
         Constructor
 
@@ -36,8 +36,10 @@ class CONV_BN_RELU(nn.Module):
         super(__class__, self).__init__()
 
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, 
-                              stride=stride, padding=padding)
+                              stride=stride, padding=padding, bias=bias)
         self.bn   = nn.BatchNorm2d(out_channels)
+        if bias == False:
+            self.bn.bias.requires_grad = False
         self.relu = nn.ReLU(inplace=True)
         
     def forward(self, x):
@@ -57,8 +59,19 @@ class DnCNN(nn.Module):
     PyTorch module for the DnCNN network.
     '''
 
+    # initialize the weights
+    def weights_init_kaiming(self, m):
+        import math
+        classname = m.__class__.__name__
+        if classname.find('Conv') != -1 or classname.find('Linear') != -1:
+            nn.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+        elif classname.find('BatchNorm') != -1:
+            m.weight.data.normal_(mean=0, std=math.sqrt(2./9./64.)).clamp_(-0.025,0.025)
+            nn.init.constant_(m.bias.data, 0.0)
+    
+
     def __init__(self, in_channels=1, out_channels=1, num_layers=17, 
-                 features=64, kernel_size=3, residual=True):
+                 features=64, kernel_size=3, residual=True, bias=False):
         '''
         Constructor for a DnCNN network.
 
@@ -83,20 +96,25 @@ class DnCNN(nn.Module):
         self.layers.append(CONV_BN_RELU(in_channels=in_channels,
                                         out_channels=features,
                                         kernel_size=kernel_size,
-                                        stride=1, padding=kernel_size//2))
+                                        stride=1, padding=kernel_size//2, bias=bias))
         # intermediate layers
         for _ in range(num_layers-2):
             self.layers.append(CONV_BN_RELU(in_channels=features,
                                             out_channels=features,
                                             kernel_size=kernel_size,
-                                            stride=1, padding=kernel_size//2))
+                                            stride=1, padding=kernel_size//2, bias=bias))
         # last layer 
         self.layers.append(nn.Conv2d(in_channels=features,
                                      out_channels=out_channels,
                                      kernel_size=kernel_size,
-                                     stride=1, padding=kernel_size//2))
+                                     stride=1, padding=kernel_size//2, bias=bias))
         # chain the layers
         self.dncnn = nn.Sequential(*self.layers)
+
+        # initialize the weights
+        ## apply Kaiming normal weight initialization  
+        ## see: https://pouannes.github.io/blog/initialization/       
+        self.dncnn.apply(self.weights_init_kaiming)
 
         
     def forward(self, x):
