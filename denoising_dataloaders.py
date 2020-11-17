@@ -174,11 +174,13 @@ class ImageUniformNoiseDataset(Dataset):
 
 
         
+
 def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
                                     train_batch_size=128, val_batch_size=32,
                                     validation_split_fraction=0.1,
                                     noise_type = 'gaussian',
-                                    noise2noise = False):
+                                    noise2noise = False,
+                                    Randomnoiselevel=False):
     '''creates dataloaders '''
     # The torchvision.transforms package provides tools for preprocessing data
     # and for performing data augmentation; here we set up a transform to
@@ -191,11 +193,11 @@ def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
     # which iterates through the Dataset and forms minibatches.
     if noise_type == 'gaussian':
         mydataset = ImageDenoisingDataset(imagepath, noise_sigma, Data_preprocessing, 
-                                          Randomnoiselevel=False,
+                                          Randomnoiselevel=Randomnoiselevel,
                                           noise2noise = noise2noise)
     elif noise_type == 'uniform-sp':
         mydataset = ImageUniformNoiseDataset(imagepath, noise_sigma, Data_preprocessing,
-                                             Randomnoiselevel=False,
+                                             Randomnoiselevel=Randomnoiselevel,
                                              noise2noise = noise2noise)
     else:
         raise(RuntimeError("Noise type %s unknown. " % (noise_type)))
@@ -222,4 +224,3 @@ def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
     train_loader = DataLoader(mydataset, batch_size=train_batch_size, sampler=train_sampler)
     val_loader   = DataLoader(mydataset, batch_size=val_batch_size,   sampler=validation_sampler)
     return train_loader, val_loader
-    
