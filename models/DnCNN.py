@@ -163,7 +163,7 @@ class CONV_RELU(nn.Module):
         return(out)
 
 
- class BF_DnCNN(nn.Module):
+class BF_DnCNN(nn.Module):
     '''
     PyTorch module for a bias-free DnCNN network.
     Note: this network doesn't have batch normalization layers.
@@ -179,7 +179,6 @@ class CONV_RELU(nn.Module):
             m.weight.data.normal_(mean=0, std=math.sqrt(2./9./64.)).clamp_(-0.025,0.025)
             nn.init.constant_(m.bias.data, 0.0)
 
-    
 
     def __init__(self, in_channels=1, out_channels=1, num_layers=17, 
                  features=64, kernel_size=3, residual=True):
