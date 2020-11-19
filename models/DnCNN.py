@@ -1,6 +1,5 @@
 """
 Parametrable DnCNN model (https://github.com/cszn/DnCNN.git)
-
 Copyright (C) 2018-2020, Gabriele Facciolo <facciolo@cmla.ens-cachan.fr>
 Copyright (C) 2018-2020, Pablo Arias <arias@cmla.ens-cachan.fr>
 Inspired on:
@@ -23,14 +22,12 @@ class CONV_BN_RELU(nn.Module):
                  stride=1, padding=3, bias=True): # FIXME: remove bias
         '''
         Constructor
-
         Args:
             - in_channels: number of input channels from precedding layer
             - out_channels: number of output channels
             - kernel_size: size of conv. kernel
             - stride: stride of convolutions
             - padding: number of zero padding
-
         Return: initialized module
         '''
         super(__class__, self).__init__()
@@ -74,7 +71,6 @@ class DnCNN(nn.Module):
                  features=64, kernel_size=3, residual=True, bias=False):
         '''
         Constructor for a DnCNN network.
-
         Args:
             - in_channels: input image channels (default 1)
             - out_channels: output image channels (default 1)
@@ -82,7 +78,6 @@ class DnCNN(nn.Module):
             - num_features: number of hidden features (default 64)
             - kernel_size: size of conv. kernel (default 3)
             - residual: use residual learning (default True)
-
         Return: network with randomly initialized weights
         '''
         super(__class__, self).__init__()
@@ -137,14 +132,12 @@ class CONV_RELU(nn.Module):
                  stride=1, padding=3, bias=True):
         '''
         Constructor
-
         Args:
             - in_channels: number of input channels from precedding layer
             - out_channels: number of output channels
             - kernel_size: size of conv. kernel
             - stride: stride of convolutions
             - padding: number of zero padding
-
         Return: initialized module
         '''
         super(__class__, self).__init__()
@@ -184,7 +177,6 @@ class BF_DnCNN(nn.Module):
                  features=64, kernel_size=3, residual=True):
         '''
         Constructor for a DnCNN network.
-
         Args:
             - in_channels: input image channels (default 1)
             - out_channels: output image channels (default 1)
@@ -192,7 +184,6 @@ class BF_DnCNN(nn.Module):
             - num_features: number of hidden features (default 64)
             - kernel_size: size of conv. kernel (default 3)
             - residual: use residual learning (default True)
-
         Return: network with randomly initialized weights
         '''
         super(__class__, self).__init__()
@@ -206,18 +197,18 @@ class BF_DnCNN(nn.Module):
         self.layers.append(CONV_RELU(in_channels=in_channels,
                                      out_channels=features,
                                      kernel_size=kernel_size,
-                                     stride=1, padding=kernel_size//2, bias=bias))
+                                     stride=1, padding=kernel_size//2, bias=False))
         # intermediate layers
         for _ in range(num_layers-2):
             self.layers.append(CONV_RELU(in_channels=features,
                                          out_channels=features,
                                          kernel_size=kernel_size,
-                                         stride=1, padding=kernel_size//2, bias=bias))
+                                         stride=1, padding=kernel_size//2, bias=False))
         # last layer 
         self.layers.append(nn.Conv2d(in_channels=features,
                                      out_channels=out_channels,
                                      kernel_size=kernel_size,
-                                     stride=1, padding=kernel_size//2, bias=bias))
+                                     stride=1, padding=kernel_size//2, bias=False))
         # chain the layers
         self.dncnn = nn.Sequential(*self.layers)
 
@@ -242,13 +233,11 @@ def DnCNN_pretrained(sigma=30, savefile=None, verbose=False, color=False):
     '''
     Loads the pretrained weights of DnCNN for grayscale and color images  
     from https://github.com/cszn/DnCNN.git
-
     Args:
         - sigma   : is the level of noise in range(10,76,5)
         - savefile: is the .pt file to save the model weights 
         - verbose : verbose output
         - color   : load the weights for the color networks
-
     Returns:
         - DnCNN(1,1) model with 17 layers with the pretrained weights    
         or
@@ -377,5 +366,3 @@ def DnCNN_pretrained(sigma=30, savefile=None, verbose=False, color=False):
         torch.save(m, savefile)
 
     return m
-
-    
