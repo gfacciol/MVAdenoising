@@ -20,7 +20,7 @@ class CONV_BN_RELU(nn.Module):
     '''
 
     def __init__(self, in_channels=128, out_channels=128, kernel_size=7, 
-                 stride=1, padding=3, bias=True):
+                 stride=1, padding=3, bias=True): # FIXME: remove bias
         '''
         Constructor
 
@@ -38,7 +38,7 @@ class CONV_BN_RELU(nn.Module):
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, 
                               stride=stride, padding=padding, bias=bias)
         self.bn   = nn.BatchNorm2d(out_channels)
-        if bias == False:
+        if bias == False: # FIXME: this doesn't work --> bias-free nets shouldn't have bn
             self.bn.bias.requires_grad = False
         self.relu = nn.ReLU(inplace=True)
         
@@ -126,6 +126,112 @@ class DnCNN(nn.Module):
         
         return(out)
 
+
+class CONV_RELU(nn.Module):
+    '''
+    PyTorch Module grouping together a 2D CONV, and ReLU layers.
+    This will simplify the definition of the bias-free DnCNN network.
+    '''
+
+    def __init__(self, in_channels=128, out_channels=128, kernel_size=7, 
+                 stride=1, padding=3, bias=True):
+        '''
+        Constructor
+
+        Args:
+            - in_channels: number of input channels from precedding layer
+            - out_channels: number of output channels
+            - kernel_size: size of conv. kernel
+            - stride: stride of convolutions
+            - padding: number of zero padding
+
+        Return: initialized module
+        '''
+        super(__class__, self).__init__()
+
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, 
+                              stride=stride, padding=padding, bias=bias)
+        self.relu = nn.ReLU(inplace=True)
+        
+    def forward(self, x):
+        '''
+        Applies the layer forward to input x
+        '''
+        out = self.conv(x)
+        out = self.relu(out)
+        
+        return(out)
+
+
+ class BF_DnCNN(nn.Module):
+    '''
+    PyTorch module for a bias-free DnCNN network.
+    Note: this network doesn't have batch normalization layers.
+    '''
+
+    # initialize the weights
+    def weights_init_kaiming(self, m):
+        import math
+        classname = m.__class__.__name__
+        if classname.find('Conv') != -1 or classname.find('Linear') != -1:
+            nn.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+    
+
+    def __init__(self, in_channels=1, out_channels=1, num_layers=17, 
+                 features=64, kernel_size=3, residual=True):
+        '''
+        Constructor for a DnCNN network.
+
+        Args:
+            - in_channels: input image channels (default 1)
+            - out_channels: output image channels (default 1)
+            - num_layers: number of layers (default 17)
+            - num_features: number of hidden features (default 64)
+            - kernel_size: size of conv. kernel (default 3)
+            - residual: use residual learning (default True)
+
+        Return: network with randomly initialized weights
+        '''
+        super(__class__, self).__init__()
+        
+        self.residual = residual
+        
+        # a list for the layers
+        self.layers = []  
+        
+        # first layer 
+        self.layers.append(CONV_RELU(in_channels=in_channels,
+                                     out_channels=features,
+                                     kernel_size=kernel_size,
+                                     stride=1, padding=kernel_size//2, bias=bias))
+        # intermediate layers
+        for _ in range(num_layers-2):
+            self.layers.append(CONV_RELU(in_channels=features,
+                                         out_channels=features,
+                                         kernel_size=kernel_size,
+                                         stride=1, padding=kernel_size//2, bias=bias))
+        # last layer 
+        self.layers.append(nn.Conv2d(in_channels=features,
+                                     out_channels=out_channels,
+                                     kernel_size=kernel_size,
+                                     stride=1, padding=kernel_size//2, bias=bias))
+        # chain the layers
+        self.dncnn = nn.Sequential(*self.layers)
+
+        # initialize the weights
+        ## apply Kaiming normal weight initialization  
+        ## see: https://pouannes.github.io/blog/initialization/       
+        self.dncnn.apply(self.weights_init_kaiming)
+
+        
+    def forward(self, x):
+        ''' Forward operation of the network on input x.'''
+        out = self.dncnn(x)
+        
+        if self.residual: # residual learning
+            out = x - out 
+        
+        return(out)
 
 
 
