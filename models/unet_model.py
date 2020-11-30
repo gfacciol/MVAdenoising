@@ -106,6 +106,26 @@ class UNet(nn.Module):
         self.outc = outconv(64, n_classes)
             
 
+        # initialize the weights
+        ## apply Kaiming normal weight initialization  
+        ## see: https://pouannes.github.io/blog/initialization/       
+        self.apply(self.weights_init_kaiming)
+
+
+    # initialize the weights
+    def weights_init_kaiming(self, m):
+        import math
+        classname = m.__class__.__name__
+        if classname.find('Conv') != -1 or classname.find('Linear') != -1:
+            nn.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+        elif classname.find('BatchNorm') != -1:
+            m.weight.data.normal_(mean=0, std=math.sqrt(2./9./64.)).clamp_(-0.025,0.025)
+            nn.init.constant_(m.bias.data, 0.0)
+    
+            
+            
+            
+            
     def forward(self, x):
         x1 = self.inc(x)
         x2 = self.down1(x1)
