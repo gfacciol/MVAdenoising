@@ -19,7 +19,7 @@ class CONV_BN_RELU(nn.Module):
     '''
 
     def __init__(self, in_channels=128, out_channels=128, kernel_size=7, 
-                 stride=1, padding=3, bias=True): # FIXME: remove bias
+                 stride=1, padding=3, bias=True):
         '''
         Constructor
         Args:
@@ -34,9 +34,11 @@ class CONV_BN_RELU(nn.Module):
 
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, 
                               stride=stride, padding=padding, bias=bias)
-        self.bn   = nn.BatchNorm2d(out_channels)
-        if bias == False: # FIXME: this doesn't work --> bias-free nets shouldn't have bn
-            self.bn.bias.requires_grad = False
+        #self.bn   = nn.BatchNorm2d(out_channels)
+        if not bias:
+            self.bn = nn.Identity()
+        else:
+            self.bn = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
         
     def forward(self, x):
@@ -68,7 +70,7 @@ class DnCNN(nn.Module):
     
 
     def __init__(self, in_channels=1, out_channels=1, num_layers=17, 
-                 features=64, kernel_size=3, residual=True, bias=False):
+                 features=64, kernel_size=3, residual=True, bias=True):
         '''
         Constructor for a DnCNN network.
         Args:
@@ -283,10 +285,10 @@ def DnCNN_pretrained(sigma=30, savefile=None, verbose=False, color=False):
     
     if not color:
         num_layers=17
-        m = DnCNN(1,1, num_layers=num_layers)
+        m = DnCNN(1,1, num_layers=num_layers, bias=True)
     else:
         num_layers=20
-        m = DnCNN(3,3, num_layers=num_layers)
+        m = DnCNN(3,3, num_layers=num_layers, bias=True)
 
         
         
