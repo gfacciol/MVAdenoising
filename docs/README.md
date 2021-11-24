@@ -14,12 +14,12 @@
 
 [TP3 - noise to noise](https://colab.research.google.com/drive/1ZAHaZJ2nsFVEDZD8B65he3SMSD0dmMei)
 
-<!--
-
 [TP4 - different denoising architectures](https://colab.research.google.com/drive/1ua-WDYpUsTdAyPOFlj7uFGh22ZKuLdDO) 
 
 [TP4' - DIP: deep image prior](https://colab.research.google.com/drive/1jqacuFh4I34MEVFGcBjJaT7kyZGOO5VB)
 
+
+<!--
 
 
 -->
