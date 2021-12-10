@@ -38,12 +38,16 @@ def make_dataset(dir):
 
 class ImageDenoisingDataset(Dataset):
 
-    def __init__(self, root, sigma=0, Data_preprocessing=None, Randomnoiselevel=False, noise2noise=True):
+    def __init__(self, root, sigma=0, Data_preprocessing=None, clipping=False,
+                 Randomnoiselevel=False, noise2noise=True):
         """
         Args:
             root (string): Root directory path.
-            Data_preprocessing (callable, optional): A function/transform that  takes in an PIL image and returns a transformed version. E.g, ``transforms.RandomCrop``
+            Data_preprocessing (callable, optional): A function/transform that
+                      takes in an PIL image and returns a transformed version. E.g,
+                      ``transforms.RandomCrop``
             sigma: the level of noise we are going to add
+            clipping: clips noisy image to 0 and 1
             Randomnoiselevel: if True a random noise in [0,sigma]
             noise2noise: if True, the returned gt is also a noisy image 
         """
@@ -57,6 +61,7 @@ class ImageDenoisingDataset(Dataset):
         self.sigma = sigma
         self.root = root
         self.imgs = imgs
+        self.clipping = clipping
         self.Data_preprocessing = Data_preprocessing
         self.noise2noise = noise2noise
         
@@ -93,6 +98,11 @@ class ImageDenoisingDataset(Dataset):
 
         # add noise to image
         img = self.add_noise(img, p)
+
+        # clip
+        if self.clipping:
+            img = torch.clip(img, 0,1)
+            gt  = torch.clip(gt , 0,1)
                 
         return img, gt
 
@@ -103,7 +113,8 @@ class ImageDenoisingDataset(Dataset):
 
 class ImageUniformNoiseDataset(Dataset):
 
-    def __init__(self, root, sigma=0, Data_preprocessing=None, Randomnoiselevel=False, noise2noise=False):
+    def __init__(self, root, sigma=0, Data_preprocessing=None,
+                 Randomnoiselevel=False, noise2noise=False):
         """
         Args:
             root (string): Root directory path.
@@ -171,14 +182,13 @@ class ImageUniformNoiseDataset(Dataset):
 
 
 
-
-
         
 
 def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
                                     train_batch_size=128, val_batch_size=32,
                                     validation_split_fraction=0.1,
                                     noise_type = 'gaussian',
+                                    clipping = False,
                                     noise2noise = False,
                                     Randomnoiselevel=False):
     '''creates dataloaders '''
@@ -193,6 +203,7 @@ def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
     # which iterates through the Dataset and forms minibatches.
     if noise_type == 'gaussian':
         mydataset = ImageDenoisingDataset(imagepath, noise_sigma, Data_preprocessing, 
+                                          clipping = False,
                                           Randomnoiselevel=Randomnoiselevel,
                                           noise2noise = noise2noise)
     elif noise_type == 'uniform-sp':
