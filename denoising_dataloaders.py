@@ -38,59 +38,59 @@ def make_dataset(dir):
 
 class ImageDenoisingDataset(Dataset):
 
-    def __init__(self, root, sigma=0, Data_preprocessing=None, clipping=False,
-                 Randomnoiselevel=False, noise2noise=True):
+    def __init__(self, root, sigma=0, data_preprocessing=None, clipping=False,
+                 random_noise_level=False, noise2noise=True):
         """
         Args:
             root (string): Root directory path.
-            Data_preprocessing (callable, optional): A function/transform that
+            data_preprocessing (callable, optional): A function/transform that
                       takes in an PIL image and returns a transformed version. E.g,
                       ``transforms.RandomCrop``
             sigma: the level of noise we are going to add
             clipping: clips noisy image to 0 and 1
-            Randomnoiselevel: if True a random noise in [0,sigma]
-            noise2noise: if True, the returned gt is also a noisy image 
+            random_noise_level: if True a random noise in [0,sigma]
+            noise2noise: if True, the returned gt is also a noisy image
         """
         imgs = make_dataset(root)
-        
+
         if len(imgs) == 0:
             raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
                                "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
-        
-        self.Randomnoiselevel=Randomnoiselevel
+
+        self.random_noise_level=random_noise_level
         self.sigma = sigma
         self.root = root
         self.imgs = imgs
         self.clipping = clipping
-        self.Data_preprocessing = Data_preprocessing
+        self.data_preprocessing = data_preprocessing
         self.noise2noise = noise2noise
-        
+
     def add_noise(self, img, p):
         return img + torch.randn(img.size())*p
-    
-        
+
+
     def __getitem__(self, index):
         """
         Args:
             index (int): Index
         Returns:
-            tuple: (image, groundtruth) 
+            tuple: (image, groundtruth)
         """
 
         img_name = self.imgs[index]
         img = Image.open( open(img_name, 'rb') ).convert('L')
         #image = io.imread(img_name)
-         
-        if self.Data_preprocessing is not None:      
-            img = self.Data_preprocessing(img)
+
+        if self.data_preprocessing is not None:
+            img = self.data_preprocessing(img)
         else:
             img = T.ToTensor()(img)
 
-        if self.Randomnoiselevel is True :
-            p = self.sigma/255*torch.rand(1)              
+        if self.random_noise_level is True :
+            p = self.sigma/255*torch.rand(1)
         else:
             p = self.sigma/255
-        
+
         # add noise to groud truth if noise2noise
         gt = img.clone()
         if self.noise2noise:
@@ -103,7 +103,7 @@ class ImageDenoisingDataset(Dataset):
         if self.clipping:
             img = torch.clip(img, 0,1)
             gt  = torch.clip(gt , 0,1)
-                
+
         return img, gt
 
 
@@ -113,29 +113,31 @@ class ImageDenoisingDataset(Dataset):
 
 class ImageUniformNoiseDataset(Dataset):
 
-    def __init__(self, root, sigma=0, Data_preprocessing=None,
-                 Randomnoiselevel=False, noise2noise=False):
+    def __init__(self, root, sigma=0, data_preprocessing=None,
+                 random_noise_level=False, noise2noise=False):
         """
         Args:
             root (string): Root directory path.
-            Data_preprocessing (callable, optional): A function/transform that  takes in an PIL image and returns a transformed version. E.g, ``transforms.RandomCrop``
+            data_preprocessing (callable, optional): A function/transform that
+                      takes in an PIL image and returns a transformed version. E.g,
+                      ``transforms.RandomCrop``
             sigma: the level of noise we are going to add
-            Randomnoiselevel: if True a random noise in [0,sigma]
+            random_noise_level: if True a random noise in [0,sigma]
         """
         imgs = make_dataset(root)
-        
+
         if len(imgs) == 0:
             raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
                                "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
 
         if sigma > 1 or sigma < 0:
             raise(RuntimeError("Noise level %f ouside valid range [0,1]. " % (sigma)))
-        
-        self.Randomnoiselevel=Randomnoiselevel
+
+        self.random_noise_level=random_noise_level
         self.sigma = sigma
         self.root = root
         self.imgs = imgs
-        self.Data_preprocessing = Data_preprocessing
+        self.data_preprocessing = data_preprocessing
         self.noise2noise = noise2noise
 
     def add_noise(self, img, p):
@@ -143,25 +145,25 @@ class ImageUniformNoiseDataset(Dataset):
         noise = torch.Tensor(img.size()).uniform_(0,1)
         return img * mask + noise * (1 - mask)
 
-        
+
     def __getitem__(self, index):
         """
         Args:
             index (int): Index
         Returns:
-            tuple: (image, groundtruth) 
+            tuple: (image, groundtruth)
         """
 
         img_name = self.imgs[index]
         img = Image.open( open(img_name, 'rb') ).convert('L')
         #image = io.imread(img_name)
-         
-        if self.Data_preprocessing is not None:
-            img = self.Data_preprocessing(img)
+
+        if self.data_preprocessing is not None:
+            img = self.data_preprocessing(img)
         else:
             img = T.ToTensor()(img)
 
-        if self.Randomnoiselevel is True:
+        if self.random_noise_level is True:
             p = torch.rand(1)
         else:
             p = self.sigma
@@ -182,7 +184,7 @@ class ImageUniformNoiseDataset(Dataset):
 
 
 
-        
+
 
 def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
                                     train_batch_size=128, val_batch_size=32,
@@ -190,25 +192,25 @@ def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
                                     noise_type = 'gaussian',
                                     clipping = False,
                                     noise2noise = False,
-                                    Randomnoiselevel=False):
+                                    random_noise_level=False):
     '''creates dataloaders '''
     # The torchvision.transforms package provides tools for preprocessing data
     # and for performing data augmentation; here we set up a transform to
     # preprocess the data by rancomly cropping the image and converting to tensor
-    Data_preprocessing=T.Compose([ T.RandomCrop(crop_size), T.RandomHorizontalFlip(), 
-                                   T.RandomVerticalFlip(), T.ToTensor() ])  
+    data_preprocessing=T.Compose([ T.RandomCrop(crop_size), T.RandomHorizontalFlip(),
+                                   T.RandomVerticalFlip(), T.ToTensor() ])
 
     # We set up a Dataset object; 
     # Datasets load training examples one at a time, so we wrap it in a DataLoader
     # which iterates through the Dataset and forms minibatches.
     if noise_type == 'gaussian':
-        mydataset = ImageDenoisingDataset(imagepath, noise_sigma, Data_preprocessing, 
+        mydataset = ImageDenoisingDataset(imagepath, noise_sigma, data_preprocessing,
                                           clipping = False,
-                                          Randomnoiselevel=Randomnoiselevel,
+                                          random_noise_level=random_noise_level,
                                           noise2noise = noise2noise)
     elif noise_type == 'uniform-sp':
-        mydataset = ImageUniformNoiseDataset(imagepath, noise_sigma, Data_preprocessing,
-                                             Randomnoiselevel=Randomnoiselevel,
+        mydataset = ImageUniformNoiseDataset(imagepath, noise_sigma, data_preprocessing,
+                                             random_noise_level=random_noise_level,
                                              noise2noise = noise2noise)
     else:
         raise(RuntimeError("Noise type %s unknown. " % (noise_type)))
