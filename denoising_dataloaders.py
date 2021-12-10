@@ -205,7 +205,7 @@ def train_val_denoising_dataloaders(imagepath, noise_sigma=30, crop_size=40,
     # which iterates through the Dataset and forms minibatches.
     if noise_type == 'gaussian':
         mydataset = ImageDenoisingDataset(imagepath, noise_sigma, data_preprocessing,
-                                          clipping = False,
+                                          clipping = clipping,
                                           random_noise_level=random_noise_level,
                                           noise2noise = noise2noise)
     elif noise_type == 'uniform-sp':
