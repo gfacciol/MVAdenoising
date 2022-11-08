@@ -8,9 +8,9 @@
 
 [TP1 - introduction to cnn denoising](https://colab.research.google.com/drive/1Sp4pETeaZU7dnnzheCxqw8LVGVn4g9TW)
 
+[TP2 - a deeper understanding of cnn denoising](https://colab.research.google.com/drive/1eFXceVAw-_2rHqOiTYgpgz1Q2NRRYSEG) 
 
 <!--
-[TP2 - a deeper understanding of cnn denoising](https://colab.research.google.com/drive/1eFXceVAw-_2rHqOiTYgpgz1Q2NRRYSEG) 
 
 
 [TP3 - noise to noise](https://colab.research.google.com/drive/1ZAHaZJ2nsFVEDZD8B65he3SMSD0dmMei)
