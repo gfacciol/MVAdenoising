@@ -1,0 +1,8 @@
+torch==0.4.0
+torchvision 
+hdf5storage
+Pillow==4.0.0
+scikit-image
+image
+git+https://github.com/szagoruyko/pytorchviz
+http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl 
