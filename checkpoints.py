@@ -9,16 +9,16 @@ def load_net(cls, path):
     - path: The path to the checkpoint.
     """
 
-    map_location = torch.device(
+    device = torch.device(
         'cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
-    data = torch.load(path, map_location=map_location)
+    data = torch.load(path, map_location=device)
 
     if 'inspectors' in data:
         raise Exception(
             'This function does not handle inspector classes. Please use `load_inspector_net` instead.')
 
-    model = cls(**data['model_args'])
+    model = cls(**data['model_args']).to(device)
     model.load_state_dict(data['model'])
 
     return model
@@ -33,19 +33,19 @@ def load_inspector_net(cls_model, cls_inspector, path):
     - path: The path to the checkpoint.
     """
 
-    map_location = torch.device(
+    device = torch.device(
         'cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
-    data = torch.load(path, map_location=map_location)
+    data = torch.load(path, map_location=device)
 
     if 'inspectors' not in data:
         raise Exception(
             'This function can only handle inspector classes. Please use `load_net` instead.')
 
-    model = cls_model(**data['model_args'])
+    model = cls_model(**data['model_args']).to(device)
     model.load_state_dict(data['model'])
 
-    inspector = cls_inspector(model)
+    inspector = cls_inspector(model).to(device)
     inspector.load_state_dict(data['inspectors'], strict=False)
 
     return inspector
