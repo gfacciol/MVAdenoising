@@ -277,8 +277,8 @@ def display_patches_vrange(mb, vrange=None):
     i=0
 
     L = len(mb)
-    M = np.floor(np.sqrt(L))
-    N = np.ceil (L/M)
+    M = int(np.floor(np.sqrt(L)))
+    N = int(np.ceil (L/M))
 
     for j in range(L):
         plt.subplot(M, N, i + 1)
