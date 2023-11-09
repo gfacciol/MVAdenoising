@@ -1,4 +1,4 @@
-# MVA Course Image denoising the man-machine contest - 2022
+# MVA Course Image denoising the man-machine contest - 2023
 
 **Jean-Michel Morel, Pablo Arias, Gabriele Facciolo**
 
@@ -8,6 +8,8 @@
 
 [TP1 - introduction to cnn denoising](https://colab.research.google.com/drive/1Sp4pETeaZU7dnnzheCxqw8LVGVn4g9TW)
 
+<!--
+
 [TP2 - a deeper understanding of cnn denoising](https://colab.research.google.com/drive/1eFXceVAw-_2rHqOiTYgpgz1Q2NRRYSEG) 
 
 [TP3 - noise to noise](https://colab.research.google.com/drive/1ZAHaZJ2nsFVEDZD8B65he3SMSD0dmMei)
@@ -15,8 +17,6 @@
 [TP4 - different denoising architectures](https://colab.research.google.com/drive/1ua-WDYpUsTdAyPOFlj7uFGh22ZKuLdDO) 
 
 [TP4' - DIP: deep image prior](https://colab.research.google.com/drive/1jqacuFh4I34MEVFGcBjJaT7kyZGOO5VB)
-
-<!--
 
 
 
