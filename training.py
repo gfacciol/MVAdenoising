@@ -1,7 +1,7 @@
 """
 training for CNN denoising
 
-Copyright (C) 2018-2019, Gabriele Facciolo <facciolo@cmla.ens-cachan.fr>
+Copyright (C) 2018-2024, Gabriele Facciolo <facciolo@ens-paris-saclay.fr>
 """
 
 def check_accuracy(model, loss_fn, dataloader):
@@ -110,7 +110,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,
 #                            mode='min', factor=0.5, patience=50,
                             mode='min', factor=0.8, patience=50,
-                            verbose=True, threshold=0.0001,
+                            threshold=0.0001,
                             threshold_mode='rel', cooldown=0,
                             min_lr=0, eps=1e-08)
 
@@ -181,6 +181,10 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
 
         # scheduler update
         scheduler.step(loss.data)
+
+        if learning_rate != scheduler.get_last_lr()[0]: 
+            print('    Scheduler: learning rate changed to %f'%scheduler.get_last_lr()[0])
+            learning_rate = scheduler.get_last_lr()[0]
 
     # Save last result
     if filename:
