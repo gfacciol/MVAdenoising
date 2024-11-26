@@ -143,7 +143,7 @@ def FFDNet_pretrained_grayscale(sigma=30, savefile=None, verbose=False):
             loadmap = {'cuda:0': 'gpu'}
         else:
             loadmap = {'cuda:0': 'cpu'}
-        m = torch.load(cached_model_fname, map_location=loadmap)
+        m = torch.load(cached_model_fname, weights_only=False, map_location=loadmap)
         return m
     except OSError:
         pass 
