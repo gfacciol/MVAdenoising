@@ -29,3 +29,6 @@
 
 **[submit your homeworks here](https://docs.google.com/forms/d/e/1FAIpQLScQZ6QQvsdihV5NqNBeVe35Cg1MnvjFFNum7o-v8Ody6dhpVA/viewform)**
 
+
+
+**EXAM 18/12/2024 - 13h - 1Z28**
