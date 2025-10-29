@@ -35,7 +35,6 @@ class DCTlike(nn.Module):
         import numpy as np
 
         dtype = torch.FloatTensor
-        if torch.cuda.is_available():  dtype = torch.cuda.FloatTensor
 
         self.sigma = sigma
         self.dct = initializeDCT
