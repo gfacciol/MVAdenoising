@@ -10,7 +10,7 @@ def PSNR(img1, img2, peak=255):
     '''
     import numpy as np
 
-    x = ((np.array(img1).squeeze() - np.array(img2).squeeze()).flatten() )
+    x = ((np.asarray(img1).squeeze() - np.asrray(img2).squeeze()).flatten() )
     return (10*np.log10(peak**2 / np.mean(x**2)))
 
 
@@ -93,14 +93,14 @@ def test_denoiser(denoiser, img_in, sigma=30, show=False, has_noise=False, sigma
     # visualize as gallery
     if show:
         if has_noise == False:
-            vistools.display_gallery([np.array(img_clean).clip(0,1)*255,
-                                      np.array(img).clip(0,255),
-                                      np.array(out).clip(0,255)],
+            vistools.display_gallery([np.asarray(img_clean).clip(0,1)*255,
+                                      np.asarray(img).clip(0,255),
+                                      np.asarray(out).clip(0,255)],
                                      ['clean', 'noisy (%.2f dB)'%psnrIN,
                                       'denoised (%.2f dB)'%psnrOUT])
         else:
-            vistools.display_gallery([np.array(img).clip(0,255),
-                                      np.array(out).clip(0,255)],                                      
+            vistools.display_gallery([np.asarray(img).clip(0,255),
+                                      np.asarray(out).clip(0,255)],
                                      ['noisy', 'denoised'])
 
     return out, img, psnrOUT, psnrIN
