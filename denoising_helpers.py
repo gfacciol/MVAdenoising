@@ -10,7 +10,7 @@ def PSNR(img1, img2, peak=255):
     '''
     import numpy as np
 
-    x = ((np.asarray(img1).squeeze() - np.asrray(img2).squeeze()).flatten() )
+    x = ((np.asarray(img1).squeeze() - np.asarray(img2).squeeze()).flatten() )
     return (10*np.log10(peak**2 / np.mean(x**2)))
 
 
