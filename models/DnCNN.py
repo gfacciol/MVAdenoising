@@ -23,7 +23,7 @@ class CONV_BN_RELU(nn.Module):
         '''
         Constructor
         Args:
-            - in_channels: number of input channels from precedding layer
+            - in_channels: number of input channels from preceding layer
             - out_channels: number of output channels
             - kernel_size: size of conv. kernel
             - stride: stride of convolutions
@@ -135,7 +135,7 @@ class CONV_RELU(nn.Module):
         '''
         Constructor
         Args:
-            - in_channels: number of input channels from precedding layer
+            - in_channels: number of input channels from preceding layer
             - out_channels: number of output channels
             - kernel_size: size of conv. kernel
             - stride: stride of convolutions
