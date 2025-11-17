@@ -131,6 +131,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
         torch.save([model, loss_history, valloss_history],
                    filename+'%04d.pt' % 0)
 
+    lastEpochTime = time()
     # Main training loop
     for epoch in range(num_epochs):
 
@@ -170,8 +171,11 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
             if loader_val is not None:
                 message = ', val_loss = %.4f' % valloss.item()
 
+            epochTime = time()
             print('Epoch %5d/%5d, ' % (epoch + 1, num_epochs) +
-                  'loss = %.4f%s'% (loss.item(), message))
+                  'loss = %.4f%s, ' % (loss.item(), message) +
+                  'epoch duration = %.2fs' % (epochTime - lastEpochTime))
+            lastEpochTime = epochTime
 
         # Save partial results
         if filename and ((epoch + 1) % save_every == 0):
