@@ -174,7 +174,7 @@ def trainmodel(model, loss_fn, loader_train, loader_val=None,
             epochTime = time()
             print('Epoch %5d/%5d, ' % (epoch + 1, num_epochs) +
                   'loss = %.4f%s, ' % (loss.item(), message) +
-                  'epoch duration = %.2fs' % (epochTime - lastEpochTime))
+                  '%i epoch(s) duration = %.2fs' % (loss_every, epochTime - lastEpochTime))
             lastEpochTime = epochTime
 
         # Save partial results
